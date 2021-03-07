@@ -9,6 +9,8 @@ let inputDuration = document.querySelector('.form__input--duration');
 let inputCadence = document.querySelector('.form__input--cadence');
 let inputElevation = document.querySelector('.form__input--elevation');
 
+
+
 class Workout {
     
     date  = new Date();
@@ -65,6 +67,8 @@ class App{
         
         // mapty coordinates creation form
         form.addEventListener('submit', this.__newWorkout.bind(this));
+        containerWorkouts.addEventListener('click', this._gotToCoordinate.bind(this))
+       
 
         this._getPosition();
     }
@@ -98,17 +102,25 @@ class App{
             .setContent(`<p>${coords}</p>`)).openPopup();
             //create a handler for click event
             this.#map.on('click', this._showForm.bind(this))
+            console.log(this.#map)//************************************************** */
     }
     _showForm(ev){
         this.#mapEvent = ev
         form.classList.remove('hidden');
         inputDistance.focus();
-        
     }
    
     _toggleElevationField (){
         inputElevation.closest('.form__row').classList.toggle('form__row--hidden');
         inputCadence.closest('.form__row').classList.toggle('form__row--hidden');
+    }
+    _gotToCoordinate(e){
+       const clickedElement = e.target.closest('.workout');
+       if(!clickedElement) return;
+       const workoutId = clickedElement.dataset.id;
+       const selectedWorkout = this.#workouks.find(workouk => workouk.id === workoutId);
+       const selectedCoordinates = selectedWorkout.coordinates;
+       this.#map.flyTo(selectedWorkout.coordinates, 13)
     }
     __newWorkout(e){
         e.preventDefault();
@@ -147,7 +159,7 @@ class App{
         const cyler= new Cycling([this.#mapEvent.latlng.lat, this.#mapEvent.latlng.lng], distance, duration, eleGain); 
         this.#workouks.push(cyler); 
        // console.log(this.#workouks)
-        this._renderHistory(this.cyler)
+        this._renderHistory(cyler)
        
        }
 
@@ -168,53 +180,57 @@ class App{
     }
 
      _renderHistory (workout){
-         
-           let html =  `<li class="workout workout--running" data-id=${workout.id}>
-           <h2 class="workout__title">${workout.description}</h2>
-           <div class="workout__details">
-             <span class="workout__icon">${workout.type == 'running' ? '🏃‍♂️' : '🚴‍♀️'}</span>
-             <span class="workout__value">${workout.distance}</span>
-             <span class="workout__unit">km</span>
-           </div>
-           <div class="workout__details">
-             <span class="workout__icon">⏱</span>
-             <span class="workout__value">${workout.duration}</span>
-             <span class="workout__unit">min</span>
-           </div>
+           let html = `
+           <li class="workout workout--running" data-id=${workout.id}>
+            <h2 class="workout__title">${workout.description}</h2>
+            <div class="workout__details">
+                <span class="workout__icon">${workout.type == 'running' ? '🏃‍♂️' : '🚴‍♀️'}</span>
+                <span class="workout__value">${workout.distance}</span>
+                <span class="workout__unit">km</span>
+            </div>
+            <div class="workout__details">
+                <span class="workout__icon">⏱</span>
+                <span class="workout__value">${workout.duration}</span>
+                <span class="workout__unit">min</span>
+            </div>
           `;
             if(workout.type === 'running'){
-                html += `<div class="workout__details">
-                <span class="workout__icon">⚡️</span>
-                <span class="workout__value">${workout.pace.toFixed(1)}</span>
-                <span class="workout__unit">min/km</span>
-              </div>
-              <div class="workout__details">
-                <span class="workout__icon">🦶🏼</span>
-                <span class="workout__value">${workout.cadance}</span>
-                <span class="workout__unit">spm</span>
-              </div></li>`
+                html += `
+                    <div class="workout__details">
+                        <span class="workout__icon">⚡️</span>
+                        <span class="workout__value">${workout.pace.toFixed(1)}</span>
+                        <span class="workout__unit">min/km</span>
+                    </div>
+                    <div class="workout__details">
+                        <span class="workout__icon">🦶🏼</span>
+                        <span class="workout__value">${workout.cadance}</span>
+                        <span class="workout__unit">spm</span>
+                    </div>
+                </li>`
             }
             if(workout.type === 'cycling'){
                 html += `
                 <div class="workout__details">
-                <span class="workout__icon">⚡️</span>
-                <span class="workout__value">${workout.speed.toFixed(1)}</span>
-                <span class="workout__unit">min/km</span>
-              </div>
-              <div class="workout__details">
-                <span class="workout__icon">🦶🏼</span>
-                <span class="workout__value">${workout.elevationGain}</span>
-                <span class="workout__unit">spm</span>
-              </div> 
+                    <span class="workout__icon">⚡️</span>
+                    <span class="workout__value">${workout.speed.toFixed(1)}</span>
+                    <span class="workout__unit">min/km</span>
+                </div>
+                <div class="workout__details">
+                    <span class="workout__icon">🦶🏼</span>
+                    <span class="workout__value">${workout.elevationGain}</span>
+                    <span class="workout__unit">spm</span>
+                </div> 
               </li>
               `
             }
-            form.insertAdjacentElement('afterend', html)
-            console.log(html)
+            form.insertAdjacentHTML('afterend', html)
+           
         }
     
     
 }
 
 const jogging = new App();
+
+
 
